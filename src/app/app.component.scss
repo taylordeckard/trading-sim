@@ -1,0 +1,18 @@
+$spacing: 20px;
+
+:host {
+  .grid {
+    display: grid;
+    grid-column-gap: 2px;
+    grid-row-gap: 2px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax(140px, 1fr));
+
+    app-ticker {
+      display: block;
+      height: 140px;
+      min-height: 140px;
+      cursor: pointer;
+    }
+  }
+}

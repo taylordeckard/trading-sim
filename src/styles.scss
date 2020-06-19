@@ -1,0 +1,43 @@
+@import '~@angular/material/theming';
+@include mat-core();
+
+/* You can add global styles to this file, and also import other style files */
+body {
+  background: #212121;
+  color: white;
+  font-family: "Arial Black", sans-serif;
+  padding: 20px;
+  a { color: lightblue; }
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    border-radius: 0px;
+    background: #aeaeae;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 0px;
+    background: #717171;
+}
+
+::-webkit-scrollbar-corner {
+  background: #aeaeae;
+}
+
+$my-app-primary: mat-palette($mat-green);
+$my-app-accent:  mat-palette($mat-blue-grey, 500, 900, A100);
+$my-app-warn:    mat-palette($mat-deep-orange);
+$my-app-theme: mat-dark-theme($my-app-primary, $my-app-accent, $my-app-warn);
+@include angular-material-theme($my-app-theme);
