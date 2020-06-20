@@ -36,4 +36,10 @@ export class ControlsComponent implements OnInit {
 
   }
 
+  resetData () {
+    if (confirm('Are you sure you want to reset?')) {
+      this.collector.reset();
+    }
+  }
+
 }

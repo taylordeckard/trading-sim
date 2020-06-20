@@ -1,0 +1,38 @@
+<mat-tab-group *ngIf="tabs.length; else addTabForm" (selectedTabChange)="onTabChange()">
+  <mat-tab *ngFor="let tab of tabs">
+    <ng-template mat-tab-label>
+      <span>{{ tab }}</span>
+      <span class="icon-x" (click)="removeTab($event, tab)">
+        <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </span>
+    </ng-template>
+    <app-charts [symbol]="tab"></app-charts>
+  </mat-tab>
+  <mat-tab class="narrow-tab">
+    <ng-template mat-tab-label>
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+    </ng-template>
+    <ng-container *ngTemplateOutlet="addTabForm; context: { msg: 'Check another symbol' }"></ng-container>
+  </mat-tab>
+</mat-tab-group>
+<ng-template #addTabForm let-msg="msg">
+  <div class="add-tab-form">
+    <div class="content">
+      <h1>{{msg || 'Enter a stock symbol to get started'}}</h1>
+      <mat-form-field>
+        <mat-label>Stock Symbol</mat-label>
+        <input matInput [formControl]="symbolFC">
+      </mat-form-field>
+      <button
+        mat-stroked-button
+        color="primary"
+        (click)="addTab()"
+        [disabled]="symbolFC.invalid"
+      >Start</button>
+    </div>
+  </div>
+</ng-template>

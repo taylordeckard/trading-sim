@@ -11,6 +11,11 @@
 >Buy</button>
 <button
   mat-raised-button
-  color="warn"
+  color="accent"
   [disabled]="sharesFC.invalid"
 >Sell</button>
+<button
+  mat-raised-button
+  color="warn"
+  (click)="resetData()"
+>Reset Data</button>

@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/websocket';
 import { EMPTY, Observable, Subject, timer } from 'rxjs';
-import { catchError, delayWhen, retryWhen, tap } from 'rxjs/operators';
+import { catchError, delayWhen, retryWhen, share, tap } from 'rxjs/operators';
 import { getProtoRoot } from '../utils';
 
 export interface PricingData {
@@ -46,7 +46,8 @@ function base64ToArray(base64) {
 })
 export class YahooService implements OnDestroy {
 
-  public socket$: WebSocketSubject<any>;
+  private websocket$: WebSocketSubject<any>
+  public socket$: Observable<any>;
   public socketOpen$: Subject<Event> = new Subject<Event>();
   public socketClose$: Subject<Event> = new Subject<Event>();
 
@@ -54,31 +55,43 @@ export class YahooService implements OnDestroy {
   ) { }
 
   public connect () {
-    this.socket$ = webSocket({
-      closeObserver: this.socketClose$,
-      deserializer: (result) => {
-        try {
-          const buffer = base64ToArray(result.data);
-          const decoded = quotefeeder.PricingData.decode(buffer);
-          return quotefeeder.PricingData.toObject(decoded, { enums: String });
-        } catch (e) {
-          console.log(e);
-          return {};
-        }
-      },
-      openObserver: this.socketOpen$,
-      url: 'wss://streamer.finance.yahoo.com/',
-    });
+    if (!this.socket$) {
+      this.websocket$ = webSocket({
+        closeObserver: this.socketClose$,
+        deserializer: (result) => {
+          try {
+            const buffer = base64ToArray(result.data);
+            const decoded = quotefeeder.PricingData.decode(buffer);
+            return quotefeeder.PricingData.toObject(decoded, { enums: String });
+          } catch (e) {
+            console.log(e);
+            return {};
+          }
+        },
+        openObserver: this.socketOpen$,
+        url: 'wss://streamer.finance.yahoo.com/',
+      });
+      this.socket$ = this.websocket$
+        .pipe(
+          this._reconnect,
+          share(),
+          catchError(() => EMPTY),
+        );
+    }
 
-    return this.socket$.pipe(this._reconnect, catchError(() => EMPTY));  
+    return this.socket$;
   }
 
   public ngOnDestroy () {
-    this.socket$.complete();
+    this.websocket$.complete();
   }
 
   public send (symbol: string) {
-    this.socket$.next({ subscribe: [symbol] });
+    this.websocket$.next({ subscribe: [symbol] });
+  }
+
+  public unsubscribe (symbol: string) {
+    this.websocket$.next({ unsubscribe: [symbol] });
   }
 
   private _reconnect (observable: Observable<any>) {

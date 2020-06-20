@@ -22,6 +22,7 @@ export interface GameState {
   currentSymbol: string;
   shares: { [key: string]: number; };
   startingBalance,
+  tabs: string[];
   trades: Trade[];
 }
 
@@ -79,6 +80,11 @@ export class GameStateService {
     this.state.currentSymbol = symbol;
     this.saveState();
     this.currentSymbol$.next(symbol);
+  }
+
+  public set tabs (tabs: string[]) {
+    this.state.tabs = tabs;
+    this.saveState();
   }
 
 }

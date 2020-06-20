@@ -1,7 +1,8 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Frame } from '../types';
+import { genRandomId } from '../utils';
 import { defer, Observable, Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
+import { delay, takeUntil, tap } from 'rxjs/operators';
 import * as d3 from 'd3';
 
 interface ChartFrame extends Frame {
@@ -51,6 +52,7 @@ function shortNum (value: number) {
 })
 export class VolumeChartComponent implements OnInit {
 
+  public uid = genRandomId();
   @Input() prices: Observable<Frame[]>;
   private chartBody;
   private dates: Date[];
@@ -67,6 +69,7 @@ export class VolumeChartComponent implements OnInit {
   ngOnInit(): void {
     this.prices
       .pipe(
+        delay(0),
         tap(prices => {
           if (prices.length > 25)  {
             this.frames = prices.slice(-25);
@@ -75,7 +78,7 @@ export class VolumeChartComponent implements OnInit {
           }
           if (this.frames.length) {
             this.updateDataWithDates();
-            d3.select('#volume-chart').selectAll('*').remove();
+            d3.select(`#${this.uid}`).selectAll('*').remove();
             this.setupChart();
           }
         }),
@@ -102,7 +105,7 @@ export class VolumeChartComponent implements OnInit {
       w = this.width - margin.left - margin.right + 50,
       h = this.height - margin.top - margin.bottom;
 
-    let svg = d3.select('#volume-chart')
+    let svg = d3.select(`#${this.uid}`)
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
       .append('g')

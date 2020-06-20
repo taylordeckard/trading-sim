@@ -1,7 +1,8 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy  } from '@angular/core';
 import { Frame } from '../types';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { delay, takeUntil } from 'rxjs/operators';
+import { genRandomId } from '../utils';
 import * as d3 from 'd3';
 
 const TRANSITION_TIME = 800;
@@ -11,12 +12,13 @@ interface ChartFrame extends Frame {
 }
 
 @Component({
-  selector: 'chart',
-  templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.scss']
+  selector: 'candle-chart',
+  templateUrl: './candle-chart.component.html',
+  styleUrls: ['./candle-chart.component.scss']
 })
-export class ChartComponent implements OnDestroy, OnInit {
+export class CandleChartComponent implements AfterViewInit, OnDestroy {
 
+  public uid = genRandomId();
   @Input() prices: Observable<ChartFrame[]>;
   private chartBody;
   private destroyed$: Subject<void> = new Subject<void>();
@@ -47,7 +49,7 @@ export class ChartComponent implements OnDestroy, OnInit {
       w = this.width - margin.left - margin.right + 50,
       h = this.height - margin.top - margin.bottom;
 
-    let svg = d3.select('#candle-chart')
+    let svg = d3.select(`#${this.uid}`)
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
       .append('g')
@@ -172,9 +174,12 @@ export class ChartComponent implements OnDestroy, OnInit {
       .padding(0.3)
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.prices
-      .pipe(takeUntil(this.destroyed$))
+      .pipe(
+        delay(0),
+        takeUntil(this.destroyed$),
+      )
       .subscribe(prices => {
         if (prices.length > 25)  {
           this.frames = prices.slice(-25);
@@ -182,13 +187,13 @@ export class ChartComponent implements OnDestroy, OnInit {
           this.frames = prices;
         }
         if (this.frames?.length) {
-          console.log(this.frames[this.frames.length - 1]);
+          // console.log(this.frames[this.frames.length - 1]);
           let dateFormat = d3.timeParse('%Q');
           for (let i = 0; i < this.frames.length; i++) {
             this.frames[i].date = dateFormat(this.frames[i].timestamp);
           }
 
-          d3.select('#candle-chart').selectAll('*').remove();
+          d3.select(`#${this.uid}`).selectAll('*').remove();
           this.drawChart();
         }
       });

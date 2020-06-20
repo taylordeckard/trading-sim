@@ -1,0 +1,19 @@
+<div class="interval-select">
+  <mat-form-field>
+    <mat-label>Candle Interval</mat-label>
+    <mat-select [(ngModel)]="candleInterval" (ngModelChange)="changeCandleInterval()">
+      <mat-option value="1 min">1 min</mat-option>
+      <mat-option value="2 min">2 min</mat-option>
+      <mat-option value="5 min">5 min</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<ng-container *ngIf="data$ | async as data">
+  <div>
+    <ng-container *ngIf="data && data[data.length - 1]">
+      <h1>{{ data[data.length - 1].last | currency }}</h1>
+    </ng-container>
+  </div>
+</ng-container>
+<candle-chart [prices]="data$"></candle-chart>
+<volume-chart [prices]="data$"></volume-chart>

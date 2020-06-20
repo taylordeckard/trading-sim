@@ -1,0 +1,26 @@
+:host {
+  path {
+    fill: white;
+  }
+  mat-tab-group {
+    width: 1100px;
+    .icon-x {
+      margin-left: 20px;
+    }
+  }
+  .add-tab-form {
+    height: 500px;
+    text-align: center;
+    .content {
+      margin-top: 300px;
+    }
+    button {
+      margin-left: 20px;
+    }
+  }
+
+  ::ng-deep .mat-tab-label:last-child {
+    width: 40px;
+    min-width: 40px;
+  }
+}
