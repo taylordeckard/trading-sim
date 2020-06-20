@@ -9,7 +9,7 @@ import { CollectorService, GameStateService } from '../services';
 })
 export class ControlsComponent implements OnInit {
 
-  public sharesFC = new FormControl(1000, Validators.required);
+  public sharesFC = new FormControl(1000, [Validators.required, Validators.min(1)]);
   public state$ = this.gameState.state$;
 
   constructor(
@@ -24,7 +24,7 @@ export class ControlsComponent implements OnInit {
     const currentPrice = this.collector.getCurrentPrice(this.gameState.state.currentSymbol);
     const debit = this.sharesFC.value * currentPrice;
     return !this.sharesFC.value
-      || this.gameState.state.balance < debit;
+      || this.gameState.state.account?.balance < debit;
 
   }
 
@@ -32,7 +32,7 @@ export class ControlsComponent implements OnInit {
     const currentPrice = this.collector.getCurrentPrice(this.gameState.state.currentSymbol);
     const credit = this.sharesFC.value * currentPrice;
     return !this.sharesFC.value
-      || this.gameState.state.balance < credit;
+      || this.gameState.state.account?.balance < credit;
 
   }
 

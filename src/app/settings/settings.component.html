@@ -1,0 +1,18 @@
+<ng-container *ngIf="!account">
+  <h1 class="header">Trading Simulator</h1>
+  <h1>Create an Account to Get Started</h1>
+  <form [formGroup]="setupForm">
+    <mat-form-field>
+      <mat-label>Starting Balance</mat-label>
+      <input matInput type="number" min="25000" formControlName="startingBalance">
+    </mat-form-field>
+  </form>
+  <div>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onStart()"
+      [disabled]="setupForm.invalid"
+    >Start</button>
+  </div>
+</ng-container>

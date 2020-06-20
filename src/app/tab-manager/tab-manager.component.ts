@@ -17,10 +17,11 @@ export class TabManagerComponent implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private collector: CollectorService,
-    private stateSvc: GameStateService,
+    private gameState: GameStateService,
   ) {
-    if (this.stateSvc.state.tabs) {
-      this.tabs = this.stateSvc.state.tabs;
+    if (this.gameState.state.tabs) {
+      this.tabs = this.gameState.state.tabs;
+      this.gameState.currentSymbol = this.tabs[0];
     }
   }
 
@@ -34,16 +35,17 @@ export class TabManagerComponent implements OnInit {
       this.cdr.detectChanges();
       this.tabGroup.selectedIndex = this.tabs.length - 1;
     }
-    this.stateSvc.tabs = this.tabs;
+    this.gameState.tabs = this.tabs;
   }
 
   public removeTab (event: MouseEvent, symbol: string) {
     event.stopPropagation();
     this.tabs.splice(this.tabs.indexOf(symbol), 1);
-    this.stateSvc.tabs = this.tabs;
+    this.gameState.tabs = this.tabs;
   }
 
   public onTabChange () {
+    this.gameState.currentSymbol = this.tabs[this.tabGroup.selectedIndex];
     this.collector.refresh();
   }
 

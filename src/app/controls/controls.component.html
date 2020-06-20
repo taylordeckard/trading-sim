@@ -1,5 +1,5 @@
 <ng-container *ngIf="state$ | async as state">
-  <h1>Balance: {{ state.balance | currency }}</h1>
+  <h1>Balance: {{ state.account.balance | currency }}</h1>
 </ng-container>
 <mat-form-field>
   <input matInput placeholder="Shares" [formControl]="sharesFC" type="number">

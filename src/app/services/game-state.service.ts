@@ -11,7 +11,7 @@ export interface Trade {
   type: TradeType;
 }
 
-export interface GameState {
+export interface Account {
   balance: number;
   change: {
     allTime: number;
@@ -19,11 +19,15 @@ export interface GameState {
     week: number;
     month: number;
   };
-  currentSymbol: string;
   shares: { [key: string]: number; };
-  startingBalance,
-  tabs: string[];
+  startingBalance: number;
   trades: Trade[];
+}
+
+export interface GameState {
+  account: Account;
+  currentSymbol: string;
+  tabs: string[];
 }
 
 const STATE_STORAGE_KEY = 'trading-sim-game-state';
@@ -39,17 +43,9 @@ export class GameStateService {
 
   constructor () {
     const initState = {
-      balance: 0,
-      change: {
-        allTime: 0,
-        day: 0,
-        week: 0,
-        mongth: 0,
-      },
-      currentSymbol: 'ALPN',
-      shares: {},
-      startingBalance: 0,
-      trades: [],
+      account: null,
+      currentSymbol: null,
+      tabs: [],
     }
     try {
       this.state = JSON.parse(localStorage.getItem(STATE_STORAGE_KEY)) || initState;
@@ -64,14 +60,14 @@ export class GameStateService {
   }
 
   public trade (trade: Trade) {
-    this.state.trades.push(trade);
+    this.state.account.trades.push(trade);
     switch (trade.type) {
     case TradeType.BUY:
-      this.state.balance -= trade.price * trade.shares;
+      this.state.account.balance -= trade.price * trade.shares;
     case TradeType.SELL:
-      this.state.balance += trade.price * trade.shares;
+      this.state.account.balance += trade.price * trade.shares;
     }
-    this.state.change.allTime = this.state.balance - this.state.startingBalance;
+    this.state.account.change.allTime = this.state.account.balance - this.state.account.startingBalance;
     // TODO: day, week, month change
     this.saveState();
   }
@@ -84,6 +80,22 @@ export class GameStateService {
 
   public set tabs (tabs: string[]) {
     this.state.tabs = tabs;
+    this.saveState();
+  }
+
+  public init (startingBalance) {
+    this.state.account = {
+      startingBalance,
+      balance: startingBalance,
+      change: {
+        allTime: 0,
+        day: 0,
+        week: 0,
+        month: 0,
+      },
+      shares: {},
+      trades: [],
+    };
     this.saveState();
   }
 

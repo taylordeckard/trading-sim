@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   CollectorService,
   GameStateService,
@@ -18,6 +19,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private gameState: GameStateService,
+    private router: Router,
   ) { }
 
   ngOnDestroy () {
@@ -26,5 +28,8 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!this.gameState.state.account) {
+      this.router.navigate(['/settings']);
+    }
   }
 }
