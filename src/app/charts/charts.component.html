@@ -9,9 +9,13 @@
   </mat-form-field>
 </div>
 <ng-container *ngIf="data$ | async as data">
-  <div>
+  <div class="flex">
     <ng-container *ngIf="data && data[data.length - 1]">
       <h1>{{ data[data.length - 1].last | currency }}</h1>
+      <div class="highlow">
+        <div>High: {{data | minmax:'max' | currency }}</div>
+        <div>Low: {{data | minmax:'min' | currency }}</div>
+      </div>
     </ng-container>
   </div>
 </ng-container>

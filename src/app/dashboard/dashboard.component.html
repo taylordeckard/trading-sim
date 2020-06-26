@@ -1,2 +1,8 @@
+<button *ngIf="hasAccount" class="metrics-link" routerLink="/metrics" mat-icon-button title="Metrics">
+  <span [innerHTML]="metricsIcon"></span>
+</button>
+<button class="settings-link" routerLink="/settings" mat-icon-button title="Settings">
+  <span [innerHTML]="settingsIcon"></span>
+</button>
 <tab-manager></tab-manager>
 <app-controls></app-controls>

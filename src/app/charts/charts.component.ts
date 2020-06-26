@@ -1,11 +1,13 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   CollectorService,
   GameStateService,
   YahooService,
 } from '../services';
+import { PricingData } from '../types';
 import { Subject } from 'rxjs';
-import { map, startWith, takeUntil } from 'rxjs/operators';
+import { map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { ONE, TWO, FIVE } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-charts',
@@ -21,7 +23,31 @@ export class ChartsComponent implements OnDestroy, OnInit {
     .pipe(
       map(() => this.collector
         .getFramesByInterval(this.symbol, this.candleInterval)),
+      // tap(frames => console.log(this.symbol)),
     );
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown (event) {
+    if (event.repeat) { return; }
+    // Cmd-1 switches to 1 minute interval 
+    if (event.metaKey && event.keyCode === ONE) {
+      event.preventDefault();
+      this.candleInterval = '1 min';
+      this.changeCandleInterval();
+    }
+    // Cmd-2 switches to 2 minute interval
+    if (event.metaKey && event.keyCode === TWO) {
+      event.preventDefault();
+      this.candleInterval = '2 min';
+      this.changeCandleInterval();
+    }
+    // Cmd-5 switches to 5 minute interval
+    if (event.metaKey && event.keyCode === FIVE) {
+      event.preventDefault();
+      this.candleInterval = '5 min';
+      this.changeCandleInterval();
+    }
+  }
 
   constructor(
     private collector: CollectorService,
@@ -41,10 +67,11 @@ export class ChartsComponent implements OnDestroy, OnInit {
     }
     this.yahoo.connect()
       .pipe(
-        map(response => {
-          console.log(response);
-          if (!Array.isArray(response)) {
+        map((response: PricingData) => {
+          if (!Array.isArray(response) && this.symbol === response.id) {
+            // console.log(response);
             this.collector.record(response);
+			this.gameState.setCurrentPrice(this.symbol, response.price);
           }
           return this.collector.frames[this.symbol];
         }),

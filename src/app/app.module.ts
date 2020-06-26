@@ -6,6 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 import { AppConfig } from '../environments/environment';
 
@@ -15,10 +16,11 @@ import { AppConfig } from '../environments/environment';
   ],
   imports: [
     AppRoutingModule,
-    BrowserModule,
-    HttpClientModule,
     BrowserAnimationsModule,
+    BrowserModule,
     FontAwesomeModule,
+    HttpClientModule,
+    MatSnackBarModule,
   ],
   providers: [
 	  { provide: 'ENVIRONMENT', useValue: AppConfig },

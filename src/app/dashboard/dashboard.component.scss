@@ -1,4 +1,17 @@
 :host {
   padding-top: 40px;
   display: block;
+  .settings-link {
+    position: fixed;
+    & ::ng-deep path { fill: white; }
+    top: 20px;
+    right: 20px;
+  }
+  .metrics-link {
+    position: fixed;
+    & ::ng-deep path { fill: white; }
+    top: 20px;
+    right: 80px;
+    width: 24px;
+  }
 }

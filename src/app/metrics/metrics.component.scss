@@ -1,9 +1,7 @@
 :host {
-  text-align: center;
-  .header { font-size: 60px; }
-  mat-form-field { width: 400px; }
   .close-button ::ng-deep {
     position: fixed;
+    top: 20px;
     right: 40px;
     svg {
       height: 40px;
@@ -12,5 +10,11 @@
     path {
       fill: white;
     }
+  }
+  .flex { display: flex; }
+  display: block;
+  padding-top: 40px;
+  .balance-change {
+    margin: 28px 0px 0px 20px;
   }
 }

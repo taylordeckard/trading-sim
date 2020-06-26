@@ -7,9 +7,10 @@ import { VolumeChartModule } from '../volume-chart/volume-chart.module';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MinmaxPipe } from './minmax.pipe';
 
 @NgModule({
-  declarations: [ChartsComponent],
+  declarations: [ChartsComponent, MinmaxPipe],
   exports: [ChartsComponent],
   imports: [
     CandleChartModule,

@@ -37,6 +37,7 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
   private xScaleZ;
   private xDateScale;
   private resizeTimer;
+  private svg;
   private width = 1000;
   private height = 500;
 
@@ -49,7 +50,7 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       w = this.width - margin.left - margin.right + 50,
       h = this.height - margin.top - margin.bottom;
 
-    let svg = d3.select(`#${this.uid}`)
+    this.svg = d3.select(`#${this.uid}`)
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
       .append('g')
@@ -60,7 +61,7 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .scale(this.xScale)
       .tickFormat(() => {});
 
-    svg.append('rect')
+    this.svg.append('rect')
       .attr('id','rect')
       .attr('width', w)
       .attr('height', h)
@@ -68,7 +69,7 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .style('pointer-events', 'all')
       .attr('clip-path', 'url(#clip)')
 
-    this.gX = svg.append('g')
+    this.gX = this.svg.append('g')
       .attr('class', 'axis x-axis') //Assign 'axis' class
       .attr('transform', 'translate(0,' + h + ')')
       .call(xAxis)
@@ -76,17 +77,17 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
     this.gX.selectAll('.tick text')
       .call(this.wrap, this.xBand.bandwidth())
 
-    let ymin = d3.min(this.frames.map(r => r.low));
-    let ymax = d3.max(this.frames.map(r => r.high));
+    let ymin = d3.min([...this.frames.map(r => r.low), ...this.frames.map(r => r.vwap)]);
+    let ymax = d3.max([...this.frames.map(r => r.high), ...this.frames.map(r => r.vwap)]);
     this.yScale = d3.scaleLinear().domain([ymin, ymax]).range([h, 0]).nice();
     let yAxis = d3.axisLeft()
       .scale(this.yScale)
 
-    this.gY = svg.append('g')
+    this.gY = this.svg.append('g')
       .attr('class', 'axis y-axis')
       .call(yAxis);
 
-    this.chartBody = svg.append('g')
+    this.chartBody = this.svg.append('g')
       .attr('class', 'chartBody')
       .attr('clip-path', 'url(#clip)');
 
@@ -102,7 +103,10 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .enter()
       .append('line'));
 
-    svg.append('defs')
+    this.drawVwapLine();
+    this.drawMouseOverLine();
+
+    this.svg.append('defs')
       .append('clipPath')
       .attr('id', 'clip')
       .append('rect')
@@ -162,6 +166,22 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .attr('stroke', d => (d.open === d.close) ? 'white' : (d.open > d.close) ? 'red' : 'green');
   }
 
+  private drawVwapLine () {
+    this.chartBody.append('path')
+      .datum(this.frames)
+      .attr('fill', 'none')
+      .attr('stroke', 'orange')
+      .attr('stroke-width', 1.5)
+      .attr('d', d3.line()
+        .x((d, i) => {
+          return this.xScale(i) - this.xBand.bandwidth()/2
+        })
+        .y((d) => {
+          return this.yScale(d.vwap)
+        })
+      );
+  }
+
   public setupAxis () {
     this.dates = this.frames.map(d => d.date);
     this.xScale = d3.scaleLinear().domain([-1, this.dates.length])
@@ -197,6 +217,51 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
           this.drawChart();
         }
       });
+  }
+
+  private drawMouseOverLine () {
+    this.svg.on('mousemove', () => {
+      const coordinates = d3.mouse(this.svg.node());
+      this.svg.selectAll('.mouse-over-line').remove();
+      this.svg.append('line')
+        .attr('class', 'mouse-over-line')
+        .attr('x1', 0)
+        .attr('x2', this.width)
+        .attr('y1', coordinates[1])
+        .attr('y2', coordinates[1])
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255,255,255,.4)')
+        .attr('stroke-width', 1.5);
+      const labelPoints = [
+        { x: -50, y: coordinates[1] - 7.5 },
+        { x: -50, y: coordinates[1] + 7.5 },
+        { x: 0, y: coordinates[1] + 7.5 },
+        { x: 5, y: coordinates[1] },
+        { x: 0, y: coordinates[1] - 7.5 },
+      ]
+      this.svg.selectAll('.mouse-over-label').remove();
+      this.svg
+        .selectAll('.mouse-over-label')
+        .data([labelPoints])
+        .enter()
+        .append('polygon')
+        .attr('class', 'mouse-over-label')
+        .attr('points', d => d.map(d => `${d.x},${d.y}`))
+        .attr('fill', '#FFFFFF');
+      this.svg.selectAll('.mouse-over-y-text').remove();
+      this.svg
+        .append('text')
+        .attr('class', 'mouse-over-y-text')
+        .attr('x', '-45')
+        .attr('y', coordinates[1] + 4)
+        .style('font-size', '12px')
+        .text(this.yScale.invert(coordinates[1]).toFixed(2));
+    });
+    this.svg.on('mouseleave', () => {
+      this.svg.selectAll('.mouse-over-label').remove();
+      this.svg.selectAll('.mouse-over-line').remove();
+      this.svg.selectAll('.mouse-over-y-text').remove();
+    });
   }
 
   ngOnDestroy () {

@@ -16,3 +16,16 @@
     >Start</button>
   </div>
 </ng-container>
+<ng-container *ngIf="account">
+  <button class="close-button" mat-icon-button routerLink="/dashboard">
+    <span [innerHTML]="closeIcon"></span>
+  </button>
+  <h1 class="header">Settings</h1>
+  <div>
+    <button
+      mat-raised-button
+      color="warn"
+      (click)="resetAccount()"
+    >Reset Account</button>
+  </div>
+</ng-container>

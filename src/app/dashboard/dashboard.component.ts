@@ -4,6 +4,7 @@ import {
   CollectorService,
   GameStateService,
   YahooService,
+  SvgService,
 } from '../services';
 import { Subject } from 'rxjs';
 import { map, startWith, takeUntil } from 'rxjs/operators';
@@ -15,11 +16,17 @@ import { map, startWith, takeUntil } from 'rxjs/operators';
 })
 export class DashboardComponent implements OnInit {
 
+  public metricsIcon = this.svg.getIcon('metrics');
+  public settingsIcon = this.svg.getIcon('settings');
+  public get hasAccount () {
+    return Boolean(this.gameState.state.account);
+  }
   private destroyed$ = new Subject<void>();
 
   constructor(
     private gameState: GameStateService,
     private router: Router,
+    private svg: SvgService,
   ) { }
 
   ngOnDestroy () {

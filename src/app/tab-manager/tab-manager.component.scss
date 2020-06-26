@@ -1,5 +1,5 @@
 :host {
-  path {
+  ::ng-deep .mat-tab-label-container path {
     fill: white;
   }
   mat-tab-group {

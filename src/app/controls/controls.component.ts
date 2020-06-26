@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { CollectorService, GameStateService } from '../services';
+import { A, Z } from '@angular/cdk/keycodes';
+import { CollectorService, ErrorService, GameStateService } from '../services';
+import { TradeType } from '../types';
 
 @Component({
   selector: 'app-controls',
@@ -11,28 +13,80 @@ export class ControlsComponent implements OnInit {
 
   public sharesFC = new FormControl(1000, [Validators.required, Validators.min(1)]);
   public state$ = this.gameState.state$;
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event) {
+    if (event.repeat) { return; }
+    // Cmd-A executes a buy
+    if (event.metaKey && event.keyCode === A) {
+      event.preventDefault();
+      this.buy();
+    }
+    // Cmd-Z executes a sell
+    if (event.metaKey && event.keyCode === Z) {
+      event.preventDefault();
+      this.sell();
+    }
+    // Shift-Cmd-Z executes a sell all
+    if (event.shiftKey && event.metaKey && event.keyCode === Z) {
+      event.preventDefault();
+      this.sellAll();
+    }
+  }
 
   constructor(
     private collector: CollectorService,
-    private gameState: GameStateService,
+    private error: ErrorService,
+    public gameState: GameStateService,
   ) { }
 
   ngOnInit(): void {
   }
   
   public buy () {
-    const currentPrice = this.collector.getCurrentPrice(this.gameState.state.currentSymbol);
+    const symbol = this.gameState.state.currentSymbol;
+    const currentPrice = this.collector.getCurrentPrice(symbol);
     const debit = this.sharesFC.value * currentPrice;
-    return !this.sharesFC.value
-      || this.gameState.state.account?.balance < debit;
-
+    if (this.gameState.state.account.balance >= debit) {
+      this.gameState.trade({
+        symbol,
+        timestamp: Date.now().toString(),
+        shares: this.sharesFC.value,
+        price: currentPrice,
+        type: TradeType.BUY,
+      })
+    } else {
+      this.error.open('Not enough funds');
+    }
   }
 
   public sell () {
-    const currentPrice = this.collector.getCurrentPrice(this.gameState.state.currentSymbol);
-    const credit = this.sharesFC.value * currentPrice;
-    return !this.sharesFC.value
-      || this.gameState.state.account?.balance < credit;
+    const symbol = this.gameState.state.currentSymbol;
+    if (this.gameState.state.account.shares[symbol] >= this.sharesFC.value) {
+      this.gameState.trade({
+        symbol,
+        timestamp: Date.now().toString(),
+        shares: this.sharesFC.value,
+        price: this.collector.getCurrentPrice(symbol),
+        type: TradeType.SELL,
+      })
+    } else {
+      this.error.open('Not enough shares');
+    }
+  }
+
+  public sellAll () {
+    const symbol = this.gameState.state.currentSymbol;
+    if (this.gameState.state.account.shares[symbol]) {
+      this.gameState.trade({
+        symbol,
+        timestamp: Date.now().toString(),
+        shares: this.gameState.state.account.shares[symbol],
+        price: this.collector.getCurrentPrice(symbol),
+        type: TradeType.SELL,
+      })
+    } else {
+      this.error.open('No Shares Available');
+    }
 
   }
 

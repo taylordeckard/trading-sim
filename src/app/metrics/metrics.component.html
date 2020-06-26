@@ -1,0 +1,11 @@
+  <button class="close-button" mat-icon-button routerLink="/dashboard">
+    <span [innerHTML]="closeIcon"></span>
+  </button>
+<div class="flex">
+  <h1>Account Balance Over Time</h1>
+  <h2 class="balance-change" [ngClass]="{
+    'green': balanceChange >= 0,
+    'red': balanceChange < 0
+  }">{{ balanceChange | currency }}</h2>
+</div>
+<metrics-chart></metrics-chart>

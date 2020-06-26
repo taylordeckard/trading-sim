@@ -1,21 +1,55 @@
 <ng-container *ngIf="state$ | async as state">
-  <h1>Balance: {{ state.account.balance | currency }}</h1>
+  <div class="flex">
+    <div>Balance: {{ state.account.balance | currency }}</div>
+	<ng-container *ngIf="gameState.worth$ | async as worth">
+		<div [ngClass]="{
+			'green': worth > state.account.startingBalance,
+			'red': worth < state.account.startingBalance
+		}">Worth: {{ worth | currency }}</div>
+	</ng-container>
+    <div>{{ state.currentSymbol }} Shares: {{ state.account.shares[state.currentSymbol] || 0 }}</div>
+	<ng-container *ngIf="gameState.currentCost$[state.currentSymbol] | async as cost">
+		<ng-container *ngTemplateOutlet="profit; context: {
+			p: ((state.account.shares[state.currentSymbol] * (gameState.currentPrice$[state.currentSymbol] | async)) - cost)
+		}"></ng-container>
+	</ng-container>
+  </div>
+  <mat-form-field>
+    <input matInput placeholder="Shares" [formControl]="sharesFC" type="number">
+  </mat-form-field>
+  <button
+    #buyBtn
+    mat-raised-button
+    color="primary"
+    [disabled]="sharesFC.invalid"
+    (click)="buy()"
+    title="Cmd-A"
+  >Buy (-{{sharesFC.value | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
+  <button
+    #sellBtn
+    mat-raised-button
+    color="accent"
+    [disabled]="sharesFC.invalid"
+    (click)="sell()"
+  >Sell (+{{sharesFC.value | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
+  <button
+    #sellBtn
+    mat-raised-button
+    color="accent"
+    [disabled]="sharesFC.invalid"
+    (click)="sellAll()"
+    title="Shift-Cmd-Z"
+  >Sell All (+{{state.account.shares[state.currentSymbol] || 0 | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
+  <button
+    mat-raised-button
+    color="warn"
+    (click)="resetData()"
+  >Reset Data</button>
 </ng-container>
-<mat-form-field>
-  <input matInput placeholder="Shares" [formControl]="sharesFC" type="number">
-</mat-form-field>
-<button
-  mat-raised-button
-  color="primary"
-  [disabled]="sharesFC.invalid"
->Buy</button>
-<button
-  mat-raised-button
-  color="accent"
-  [disabled]="sharesFC.invalid"
->Sell</button>
-<button
-  mat-raised-button
-  color="warn"
-  (click)="resetData()"
->Reset Data</button>
+
+<ng-template #profit let-p="p">
+	<div [ngClass]="{
+		'green': p > 0,
+		'red': p < 0
+	}">Profit: {{ p | currency }}</div>
+</ng-template>

@@ -1,4 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
+import { datesAreOnSameDay } from '../utils';
 import { Frame, PricingData } from '../types';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -79,6 +80,24 @@ export class CollectorService {
     return 0;
   }
 
+  private calcPV (high: number, low: number, close: number, volume: number) {
+    const typical = (high + low + close) / 3;
+    return typical * volume;
+  }
+
+  private calculateVWAP (frames: Frame[]) {
+    const today = new Date();
+    const currentDayFrames = frames
+      .filter(f => datesAreOnSameDay(new Date(Number(f.timestamp)), today));
+    currentDayFrames.reduce((memo, f) => {
+      const pv = ((f.high + f.low + f.close) / 3) * f.volume;
+      memo.sumPV += pv;
+      memo.sumVolume += f.volume;
+      f.vwap = memo.sumPV / memo.sumVolume;
+      return memo;
+    }, { sumPV: 0, sumVolume: 0 });
+  }
+
   public getFramesByInterval (symbol: string, candleInterval: '1 min' | '2 min' | '5 min') {
     let firstFrameTime = null;
     let max = intervalMap[candleInterval];
@@ -103,6 +122,7 @@ export class CollectorService {
       return memo;
     }, { frame: undefined, results: [] });
     if (reduced?.frame) { reduced.results.push(reduced.frame); }
+    this.calculateVWAP(reduced?.results);
     return reduced?.results || [];
   }
 

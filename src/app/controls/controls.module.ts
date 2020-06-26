@@ -5,9 +5,10 @@ import { ControlsComponent } from './controls.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { CostPipe } from './cost.pipe';
 
 @NgModule({
-  declarations: [ControlsComponent],
+  declarations: [ControlsComponent, CostPipe],
   exports: [ControlsComponent],
   imports: [
     CommonModule,
