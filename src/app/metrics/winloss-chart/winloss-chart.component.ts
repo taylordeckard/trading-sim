@@ -4,19 +4,23 @@ import { GameStateService } from '../../services';
 import { Trade, TradeType } from '../../types';
 import * as d3 from 'd3';
 
-const svgId = 'metrics-chart';
+const svgId = 'winloss-chart';
 
 const datePipe = new DatePipe('en-US');
 const formatTick = (dates: Date[], d) => {
   return datePipe.transform(d, 'MMM d');
 }
 
+interface TradeWithDate extends Trade {
+  date: Date;
+}
+
 @Component({
-  selector: 'metrics-chart',
-  templateUrl: './metrics-chart.component.html',
-  styleUrls: ['./metrics-chart.component.scss'],
+  selector: 'winloss-chart',
+  templateUrl: './winloss-chart.component.html',
+  styleUrls: ['./winloss-chart.component.scss'],
 })
-export class MetricsChartComponent implements OnInit {
+export class WinLossChartComponent implements OnInit {
 
   width = 1000;
   height = 650;
@@ -48,7 +52,7 @@ export class MetricsChartComponent implements OnInit {
       w = this.width - margin.left - margin.right + 50,
       h = this.height - margin.top - margin.bottom;
 
-    this.svg = d3.select(`#metrics-chart`)
+    this.svg = d3.select(`#winloss-chart`)
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
       .append('g')
@@ -95,28 +99,57 @@ export class MetricsChartComponent implements OnInit {
   }
 
   private calcFrames () {
-    const trades: any = this.gameState.state.account.trades.map(t => {
+    const trades: TradeWithDate[] = this.gameState.state.account.trades.map(t => {
       (<any> t).date = new Date(Number(t.timestamp));
-      return t;
+      return <TradeWithDate> t;
     });
     const firstFrame = {
       date: new Date(trades[0].date.getTime() - 8.64e+7),
-      value: this.gameState.state.account.startingBalance,
+      value: 1,
     };
 
     this.frames = trades.reduce((memo, t) => {
-      const latest = memo[memo.length - 1];
-      if (latest.date.getDay() !== t.date.getDay()) {
-        memo.push({
+      switch (t.type) {
+      case TradeType.BUY:
+        if (!memo.buys[t.symbol]) {
+          memo.buys[t.symbol] = [];
+        }
+        memo.buys[t.symbol].push(t);
+        break;
+      case TradeType.SELL:
+        // get average price of shares
+        const sums = memo.buys[t.symbol].reduce((memo, b) => {
+          memo.sumPrice += b.price * b.shares;
+          memo.sumShares += b.shares;
+          return memo;
+        }, { sumPrice: 0, sumShares: 0 });
+        const averagePrice = sums.sumPrice / sums.sumShares;
+        const bought = averagePrice * t.shares;
+        const sold = t.price * t.shares;
+        // update wins/losses
+        if (sold > bought) {
+          memo.wins += bought - sold;
+        } else if (sold < bought) {
+          memo.losses += sold - bought;
+        }
+        // remove saved buys
+        const clearedIdx = memo.buys[t.symbol].reduce((memo, buy, i) => {
+          if (t.shares >= buy.shares) {
+            memo.push(i);
+          } else {
+            buy.shares -= t.shares;
+          }
+          return memo;
+        }, []);
+        clearedIdx.forEach(i => memo.buys[t.symbol].splice(i, 1));
+        
+        memo.frames.push({
           date: t.date,
-          value: latest.value + this.getTradeResult(t),
+          value: memo.wins / (memo.wins + memo.losses),
         });
-      } else {
-        latest.value += this.getTradeResult(t);
       }
-
       return memo;
-    }, [firstFrame]);
+    }, { frames: [firstFrame], buys: {}, losses: 0, wins: 0 }).frames;
   }
 
   private calcDates () {
@@ -128,7 +161,7 @@ export class MetricsChartComponent implements OnInit {
       .datum(this.frames)
       .attr('fill', 'none')
       .attr('stroke', (d) => {
-        if (d[d.length - 1].value > this.gameState.state.account.startingBalance) {
+        if (d[d.length - 1].value > 0.5) {
           return '#00FF00';
         }
         return 'red';
@@ -176,7 +209,7 @@ export class MetricsChartComponent implements OnInit {
         .attr('x', '-45')
         .attr('y', coordinates[1] + 4)
         .style('font-size', '12px')
-        .text(Math.floor(this.yScale.invert(coordinates[1])));
+        .text(`${Math.floor(this.yScale.invert(coordinates[1]) * 100)}%`);
     });
     this.svg.on('mouseleave', () => {
       this.svg.selectAll('.mouse-over-label').remove();

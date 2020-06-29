@@ -87,9 +87,8 @@ export class CollectorService {
 
   private calculateVWAP (frames: Frame[]) {
     const today = new Date();
-    const currentDayFrames = frames
-      .filter(f => datesAreOnSameDay(new Date(Number(f.timestamp)), today));
-    currentDayFrames.reduce((memo, f) => {
+    const currentDayFrames = frames?.filter(f => datesAreOnSameDay(new Date(Number(f.timestamp)), today));
+    currentDayFrames?.reduce((memo, f) => {
       const pv = ((f.high + f.low + f.close) / 3) * f.volume;
       memo.sumPV += pv;
       memo.sumVolume += f.volume;

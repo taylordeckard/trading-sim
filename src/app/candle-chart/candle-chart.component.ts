@@ -56,7 +56,6 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .append('g')
       .attr('transform', 'translate(' +margin.left+ ',' +margin.top+ ')');
 
-    this.setupAxis();
     let xAxis = d3.axisBottom()
       .scale(this.xScale)
       .tickFormat(() => {});
@@ -91,19 +90,6 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
       .attr('class', 'chartBody')
       .attr('clip-path', 'url(#clip)');
 
-    // draw rectangles
-    this.candles = this.drawCandles(this.chartBody.selectAll('.candle')
-      .data(this.frames, d => d.timestamp)
-      .enter()
-      .append('rect'));
-
-    // draw high and low
-    this.stems = this.drawStems(this.chartBody.selectAll('g.line')
-      .data(this.frames, d => d.timestamp)
-      .enter()
-      .append('line'));
-
-    this.drawVwapLine();
     this.drawMouseOverLine();
 
     this.svg.append('defs')
@@ -167,8 +153,10 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
   }
 
   private drawVwapLine () {
+    this.chartBody.selectAll('.vwap').remove();
     this.chartBody.append('path')
       .datum(this.frames)
+      .attr('class', 'vwap')
       .attr('fill', 'none')
       .attr('stroke', 'orange')
       .attr('stroke-width', 1.5)
@@ -177,7 +165,7 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
           return this.xScale(i) - this.xBand.bandwidth()/2
         })
         .y((d) => {
-          return this.yScale(d.vwap)
+          return this.yScale(d.vwap) || 0;
         })
       );
   }
@@ -214,13 +202,15 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
           }
 
           d3.select(`#${this.uid}`).selectAll('*').remove();
+          this.setupAxis();
           this.drawChart();
+          this.drawData();
         }
       });
   }
 
   private drawMouseOverLine () {
-    this.svg.on('mousemove', () => {
+    const mouseOverLine = () => {
       const coordinates = d3.mouse(this.svg.node());
       this.svg.selectAll('.mouse-over-line').remove();
       this.svg.append('line')
@@ -256,12 +246,33 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
         .attr('y', coordinates[1] + 4)
         .style('font-size', '12px')
         .text(this.yScale.invert(coordinates[1]).toFixed(2));
-    });
+    }
+    this.svg.on('mousemove', mouseOverLine);
     this.svg.on('mouseleave', () => {
       this.svg.selectAll('.mouse-over-label').remove();
       this.svg.selectAll('.mouse-over-line').remove();
       this.svg.selectAll('.mouse-over-y-text').remove();
     });
+  }
+
+  private drawData () {
+    this.chartBody.selectAll('.candle').remove();
+    this.chartBody.selectAll('.stem').remove();
+
+    // draw rectangles
+    this.candles = this.drawCandles(this.chartBody.selectAll('.candle')
+      .data(this.frames, d => d.timestamp)
+      .enter()
+      .append('rect'));
+
+    // draw high and low
+    this.stems = this.drawStems(this.chartBody.selectAll('g.line')
+      .data(this.frames, d => d.timestamp)
+      .enter()
+      .append('line'))
+      .attr('class', 'stem');
+
+    this.drawVwapLine();
   }
 
   ngOnDestroy () {

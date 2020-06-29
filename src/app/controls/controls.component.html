@@ -17,6 +17,7 @@
   <mat-form-field>
     <input matInput placeholder="Shares" [formControl]="sharesFC" type="number">
   </mat-form-field>
+  <span>{{sharesFC.value | cost: (gameState.currentPrice$[state.currentSymbol] | async)}}</span>
   <button
     #buyBtn
     mat-raised-button
@@ -24,22 +25,14 @@
     [disabled]="sharesFC.invalid"
     (click)="buy()"
     title="Cmd-A"
-  >Buy (-{{sharesFC.value | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
+  >Buy</button>
   <button
     #sellBtn
     mat-raised-button
     color="accent"
     [disabled]="sharesFC.invalid"
     (click)="sell()"
-  >Sell (+{{sharesFC.value | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
-  <button
-    #sellBtn
-    mat-raised-button
-    color="accent"
-    [disabled]="sharesFC.invalid"
-    (click)="sellAll()"
-    title="Shift-Cmd-Z"
-  >Sell All (+{{state.account.shares[state.currentSymbol] || 0 | cost: (gameState.currentPrice$[state.currentSymbol] | async)}})</button>
+  >Sell</button>
   <button
     mat-raised-button
     color="warn"

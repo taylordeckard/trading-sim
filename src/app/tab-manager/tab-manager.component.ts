@@ -1,7 +1,15 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CLOSE_SQUARE_BRACKET, OPEN_SQUARE_BRACKET } from '@angular/cdk/keycodes';
 import { FormControl, Validators } from '@angular/forms';
 import { MatTabGroup } from '@angular/material/tabs';
+import { ENTER } from '@angular/cdk/keycodes';
 import { CollectorService, GameStateService } from '../services';
 import { SvgService } from '../services';
 
@@ -60,6 +68,7 @@ export class TabManagerComponent implements OnInit {
       this.tabGroup.selectedIndex = this.tabs.length - 1;
     }
     this.gameState.tabs = this.tabs;
+    this.cdr.detectChanges();
   }
 
   public removeTab (event: MouseEvent, symbol: string) {
@@ -89,6 +98,14 @@ export class TabManagerComponent implements OnInit {
       this.tabGroup.selectedIndex += 1;
     } else {
       this.tabGroup.selectedIndex = 0;
+    }
+  }
+
+  public onInputKeydown (event) {
+    if (event.keyCode === ENTER) {
+      if (this.symbolFC.valid) {
+        this.addTab();
+      }
     }
   }
 }

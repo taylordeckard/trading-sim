@@ -2,11 +2,12 @@ import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core
 import {
   CollectorService,
   GameStateService,
+  MockSocketService,
   YahooService,
 } from '../services';
 import { PricingData } from '../types';
 import { Subject } from 'rxjs';
-import { map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
 import { ONE, TWO, FIVE } from '@angular/cdk/keycodes';
 
 @Component({
@@ -52,6 +53,7 @@ export class ChartsComponent implements OnDestroy, OnInit {
   constructor(
     private collector: CollectorService,
     private gameState: GameStateService,
+    private mockSocket: MockSocketService,
     private yahoo: YahooService,
   ) { }
 
@@ -64,6 +66,9 @@ export class ChartsComponent implements OnDestroy, OnInit {
   ngOnInit(): void {
     if (this.yahoo.socket$) {
       this.yahoo.send(this.symbol);
+    }
+    if (this.symbol === 'MOCK') {
+      this.yahoo = <any> this.mockSocket;
     }
     this.yahoo.connect()
       .pipe(

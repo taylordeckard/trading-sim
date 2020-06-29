@@ -1,11 +1,26 @@
-  <button class="close-button" mat-icon-button routerLink="/dashboard">
-    <span [innerHTML]="closeIcon"></span>
-  </button>
-<div class="flex">
-  <h1>Account Balance Over Time</h1>
-  <h2 class="balance-change" [ngClass]="{
-    'green': balanceChange >= 0,
-    'red': balanceChange < 0
-  }">{{ balanceChange | currency }}</h2>
-</div>
-<metrics-chart></metrics-chart>
+<button class="close-button" mat-icon-button routerLink="/dashboard">
+  <span [innerHTML]="closeIcon"></span>
+</button>
+<mat-form-field>
+  <mat-label>Select a Chart Type</mat-label>
+  <mat-select [(ngModel)]="chartType">
+    <mat-option value="balance">Account Balance Over Time</mat-option>
+    <mat-option value="loss-win">Win Percentage Over Time</mat-option>
+  </mat-select>
+</mat-form-field>
+<ng-container *ngIf="chartType === 'balance'">
+  <div class="flex">
+    <h1>Account Balance Over Time</h1>
+    <h2 class="balance-change" [ngClass]="{
+      'green': balanceChange >= 0,
+      'red': balanceChange < 0
+    }">{{ balanceChange | currency }}</h2>
+  </div>
+  <balance-chart></balance-chart>
+</ng-container>
+<ng-container *ngIf="chartType === 'loss-win'">
+  <div class="flex">
+    <h1>Win Percentage Over Time</h1>
+  </div>
+  <winloss-chart></winloss-chart>
+</ng-container>
