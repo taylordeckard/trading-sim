@@ -8,10 +8,13 @@
 		}">Worth: {{ worth | currency }}</div>
 	</ng-container>
     <div>{{ state.currentSymbol }} Shares: {{ state.account.shares[state.currentSymbol] || 0 }}</div>
-	<ng-container *ngIf="gameState.currentCost$[state.currentSymbol] | async as cost">
+	<ng-container *ngIf="gameState.averageCost$[state.currentSymbol] | async as avgPrice">
+      <div *ngIf="avgPrice > 0">Avg. Price: {{avgPrice | currency}}</div>
+      <ng-container *ngIf="gameState.currentPrice$[state.currentSymbol] | async as nowPrice">
 		<ng-container *ngTemplateOutlet="profit; context: {
-			p: ((state.account.shares[state.currentSymbol] * (gameState.currentPrice$[state.currentSymbol] | async)) - cost)
+			p: ((state.account.shares[state.currentSymbol] * nowPrice) - (state.account.shares[state.currentSymbol] * avgPrice))
 		}"></ng-container>
+      </ng-container>
 	</ng-container>
   </div>
   <mat-form-field>
@@ -41,7 +44,7 @@
 </ng-container>
 
 <ng-template #profit let-p="p">
-	<div [ngClass]="{
+    <div [ngClass]="{
 		'green': p > 0,
 		'red': p < 0
 	}">Profit: {{ p | currency }}</div>

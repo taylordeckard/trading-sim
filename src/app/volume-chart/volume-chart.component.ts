@@ -71,8 +71,8 @@ export class VolumeChartComponent implements OnInit {
       .pipe(
         delay(0),
         tap(prices => {
-          if (prices.length > 25)  {
-            this.frames = prices.slice(-25);
+          if (prices.length > 50)  {
+            this.frames = prices.slice(-50);
           } else {
             this.frames = prices;
           }

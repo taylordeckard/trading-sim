@@ -14,7 +14,7 @@ export class GameStateService {
   public state$: BehaviorSubject<GameState>;
   public readonly state: GameState;
   public currentPrice$: StockPriceSubjects;
-  public currentCost$: StockPriceSubjects;
+  public averageCost$: StockPriceSubjects;
   public currentSymbol$: BehaviorSubject<string>;
   public worth$: BehaviorSubject<number>;
 
@@ -29,9 +29,10 @@ export class GameStateService {
       this.state = JSON.parse(localStorage.getItem(STATE_STORAGE_KEY)) || initState;
       this.state$ = new BehaviorSubject<GameState>(this.state);
       this.currentPrice$ = {};
-      this.currentCost$ = {};
+      this.averageCost$ = {};
       this.currentSymbol$ = new BehaviorSubject<string>(this.state.currentSymbol);
 	  this.worth$ = new BehaviorSubject<number>(this.calculateWorth());
+      this.initSubjects();
     } catch (e) { }
   }
 
@@ -45,26 +46,25 @@ export class GameStateService {
     if (!this.state.account.shares[trade.symbol]) {
       this.state.account.shares[trade.symbol] = 0;
     }
-    if (!this.state.account.shareCost[trade.symbol]) {
-      this.state.account.shareCost[trade.symbol] = 0;
+    if (!this.state.account.shareDetails[trade.symbol]) {
+      this.state.account.shareDetails[trade.symbol] = [];
     }
     const value = trade.price * trade.shares;
     switch (trade.type) {
     case TradeType.BUY:
       this.state.account.balance -= value;
-      this.state.account.shareCost[trade.symbol] += value;
+      this.state.account.shareDetails[trade.symbol].push({ shares: trade.shares, cost: trade.price });
       this.state.account.shares[trade.symbol] += trade.shares;
       break;
     case TradeType.SELL:
       this.state.account.balance += value;
-      this.state.account.shareCost[trade.symbol] -= value;
+      this.sellShares(trade.symbol, trade.shares);
       this.state.account.shares[trade.symbol] -= trade.shares;
+      if (this.state.account.shares[trade.symbol] === 0)  {
+        this.state.account.shareDetails[trade.symbol] = [];
+      }
     }
-    if (!this.currentCost$[trade.symbol]) {
-      this.currentCost$[trade.symbol] =
-        new BehaviorSubject<number>(this.state.account.shareCost[trade.symbol]);
-    }
-    this.currentCost$[trade.symbol].next(this.state.account.shareCost[trade.symbol]);
+    this.updateAverageCost(trade.symbol);
     this.state.account.change.allTime = this.state.account.balance - this.state.account.startingBalance;
     // TODO: day, week, month change
     this.saveState();
@@ -101,7 +101,7 @@ export class GameStateService {
         week: 0,
         month: 0,
       },
-	  shareCost: {},
+	  shareDetails: {},
       shares: {},
       trades: [],
     };
@@ -123,6 +123,42 @@ export class GameStateService {
 		  return memo;
 	  }, 0);
 	  return bal + inv;
+  }
+
+  private updateAverageCost (symbol: string) {
+    const averageCost =  this.getCostOfAllShares(symbol) /
+      this.state.account.shares[symbol];
+    if (!this.averageCost$[symbol]) {
+      this.averageCost$[symbol] =
+        new BehaviorSubject<number>(averageCost);
+    }
+    this.averageCost$[symbol].next(averageCost);
+  }
+
+  private initSubjects () {
+    Object.keys(this.state.account.shares).forEach(symbol => {
+      this.updateAverageCost(symbol);
+    });
+  }
+
+  private getCostOfAllShares (symbol: string) {
+    return this.state.account.shareDetails[symbol].reduce((acc, d) => {
+      acc += d.cost * d.shares;
+      return acc;
+    }, 0);
+  }
+
+  private sellShares (symbol: string, numShares: number) {
+    let sharesLeft = numShares;
+    this.state.account.shareDetails[symbol] = this.state.account.shareDetails[symbol]
+      .reduce((acc, d) => {
+        if (sharesLeft < d.shares) {
+          const diff = d.shares - sharesLeft;
+          acc.push({ shares: diff, cost: d.cost });
+        }
+        sharesLeft -= d.shares;
+        return acc;
+      }, []);
   }
 
 }

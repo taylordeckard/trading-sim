@@ -56,7 +56,7 @@ export interface Account {
     week: number;
     month: number;
   };
-  shareCost: { [key: string]: number; };
+  shareDetails: { [key: string]: { shares: number, cost: number }[]; };
   shares: { [key: string]: number; };
   startingBalance: number;
   trades: Trade[];

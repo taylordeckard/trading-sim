@@ -26,7 +26,6 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
   private lastPricesLength = 0;
   private candles;
   private dates;
-  private months;
   private t;
   private gX;
   private gY;
@@ -44,8 +43,6 @@ export class CandleChartComponent implements AfterViewInit, OnDestroy {
   constructor() { }
 
   drawChart () {
-    this.months = {0 : 'Jan', 1 : 'Feb', 2 : 'Mar', 3 : 'Apr', 4 : 'May', 5 : 'Jun', 6 : 'Jul', 7 : 'Aug', 8 : 'Sep', 9 : 'Oct', 10 : 'Nov', 11 : 'Dec'}
-
     const margin = {top: 15, right: 0, bottom: 10, left: 50},
       w = this.width - margin.left - margin.right + 50,
       h = this.height - margin.top - margin.bottom;

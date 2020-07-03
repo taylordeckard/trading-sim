@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as Long from 'long';
 import { interval, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CollectorService } from './collector.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,13 +10,18 @@ import { map } from 'rxjs/operators';
 export class MockSocketService {
 
   public socketOpen$ = new Subject();
-  constructor() { }
+  constructor(
+    private collector: CollectorService, 
+  ) {
+    this.collector.reset('MOCK');
+  }
   public connect () {
-    return interval(500)
+	let price = 1;
+    return interval(2000)
       .pipe(map(() => {
         return {
           id: 'MOCK',
-          price: Math.random() * (4 - 3) + 3,
+          price: price += 0.1,
           time: new Long(Date.now()),
           exchange: 'NASDAQ',
           quoteType: 'equity',
@@ -28,5 +34,8 @@ export class MockSocketService {
   }
 
   public send (symbol: string) {
+  }
+
+  public unsubscribe () {
   }
 }

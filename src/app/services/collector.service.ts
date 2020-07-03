@@ -125,9 +125,14 @@ export class CollectorService {
     return reduced?.results || [];
   }
 
-  public reset () {
-    this.frames = {};
-    localStorage.removeItem(FRAMES_STORAGE_KEY);
+  public reset (symbol?: string) {
+    if (!symbol) {
+      this.frames = {};
+      localStorage.removeItem(FRAMES_STORAGE_KEY);
+    } else {
+      this.frames[symbol] = [];
+      localStorage.setItem(FRAMES_STORAGE_KEY, JSON.stringify(this.frames));
+    }
   }
 
   public refresh () {
