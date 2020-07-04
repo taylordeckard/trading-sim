@@ -1,0 +1,22 @@
+<h2>{{ tableData.length }} Total Sells</h2>
+<div class="table-container">
+  <table>
+    <thead>
+      <th>Time of Sell</th>
+      <th>Change</th>
+    </thead>
+    <tbody>
+      <tr [ngClass]="{
+        'green': row.change > 0,
+        'red': row.change < 0
+      }" *ngFor="let row of tableData">
+        <td>
+          <span [innerText]="row.date | date:'MMM d h:mm:ss'"></span>
+        </td>
+        <td>
+          <span [innerText]="row.change | currency"></span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

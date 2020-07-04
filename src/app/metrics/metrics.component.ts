@@ -10,7 +10,7 @@ export class MetricsComponent implements OnInit {
 
   public balanceChange = this.gameState.state.account.balance -
     this.gameState.state.account.startingBalance;
-  public chartType: 'balance' | 'loss-win' = 'balance';
+  public chartType: 'balance' | 'daily' | 'loss-win' = 'balance';
   public closeIcon = this.svg.getIcon('close');
 
   constructor(

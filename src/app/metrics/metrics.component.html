@@ -5,6 +5,7 @@
   <mat-label>Select a Chart Type</mat-label>
   <mat-select [(ngModel)]="chartType">
     <mat-option value="balance">Account Balance Over Time</mat-option>
+    <mat-option value="daily">Daily Change</mat-option>
     <mat-option value="loss-win">Win Percentage Over Time</mat-option>
   </mat-select>
 </mat-form-field>
@@ -17,6 +18,12 @@
     }">{{ balanceChange | currency }}</h2>
   </div>
   <balance-chart></balance-chart>
+</ng-container>
+<ng-container *ngIf="chartType === 'daily'">
+  <div class="flex">
+    <h1>Daily Change</h1>
+  </div>
+  <daily-chart></daily-chart>
 </ng-container>
 <ng-container *ngIf="chartType === 'loss-win'">
   <div class="flex">

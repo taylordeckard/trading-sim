@@ -1,0 +1,12 @@
+<div class="flex">
+  <button mat-icon-button (click)="changeMonth('back')">
+    <span [innerHTML]="backIcon"></span>
+  </button>
+  <h3>{{month}} {{targetYear}}</h3>
+  <button mat-icon-button (click)="changeMonth('forward')">
+    <span [innerHTML]="forwardIcon"></span>
+  </button>
+</div>
+<div>
+  <svg id="daily-chart"></svg>
+</div>

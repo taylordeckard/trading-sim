@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { add, close, metrics, settings } from '../svgs';
+import { add, backward, close, forward, metrics, settings } from '../svgs';
 
-const iconMap = { add, close, metrics, settings };
+const iconMap = { add, backward, close, forward, metrics, settings };
 
 @Injectable({
   providedIn: 'root',

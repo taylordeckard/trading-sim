@@ -1,0 +1,25 @@
+:host {
+  .table-container {
+    max-height: 80vh;
+    overflow: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    tr {
+      transition: background 0.4s;
+      &:hover {
+        background: darken(#212121, 10%);
+      }
+    }
+    th {
+      text-align: left;
+    }
+    th, td {
+      padding: 4px;
+    }
+  }
+  table, th, td {
+    border: 1px solid #505050;
+  }
+}

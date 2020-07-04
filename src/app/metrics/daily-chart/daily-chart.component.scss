@@ -1,0 +1,14 @@
+:host {
+  .flex {
+    align-items: center;
+    display: flex;
+    button {
+      ::ng-deep svg {
+        margin-top: 8px;
+        path {
+          fill: white;
+        }
+      }
+    }
+  }
+}
