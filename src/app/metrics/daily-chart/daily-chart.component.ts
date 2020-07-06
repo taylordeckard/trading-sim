@@ -37,7 +37,7 @@ export class DailyChartComponent implements AfterViewInit {
   private badColorRange;
   private goodColorRange;
   private targetMonth;
-  private targetYear;
+  public targetYear;
   public backIcon = this.svgSvc.getIcon('backward');
   public forwardIcon = this.svgSvc.getIcon('forward');
   public get month () {

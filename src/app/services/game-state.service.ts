@@ -28,12 +28,12 @@ export class GameStateService {
     try {
       this.state = JSON.parse(localStorage.getItem(STATE_STORAGE_KEY)) || initState;
       this.state$ = new BehaviorSubject<GameState>(this.state);
-      this.currentPrice$ = {};
-      this.averageCost$ = {};
-      this.currentSymbol$ = new BehaviorSubject<string>(this.state.currentSymbol);
-	  this.worth$ = new BehaviorSubject<number>(this.calculateWorth());
-      this.initSubjects();
     } catch (e) { }
+    this.currentPrice$ = {};
+    this.averageCost$ = {};
+    this.currentSymbol$ = new BehaviorSubject<string>(this.state.currentSymbol);
+    this.worth$ = new BehaviorSubject<number>(this.calculateWorth());
+    this.initSubjects();
   }
 
   private saveState () {
@@ -114,18 +114,20 @@ export class GameStateService {
   }
 
   private calculateWorth () {
-	  const bal = this.state.account.balance;
-	  const inv = Object.keys(this.state.currentPrice).reduce((memo, key) => {
-		  if (this.state.account.shares[key]) {
-			  memo += this.state.currentPrice[key] * this.state.account.shares[key];
-		  }
+    if (!this.state.account) { return; }
+    const bal = this.state.account.balance;
+    const inv = Object.keys(this.state.currentPrice).reduce((memo, key) => {
+        if (this.state.account.shares[key]) {
+            memo += this.state.currentPrice[key] * this.state.account.shares[key];
+        }
 
-		  return memo;
-	  }, 0);
-	  return bal + inv;
+        return memo;
+    }, 0);
+    return bal + inv;
   }
 
   private updateAverageCost (symbol: string) {
+    if (!this.state.account) { return; }
     const averageCost =  this.getCostOfAllShares(symbol) /
       this.state.account.shares[symbol];
     if (!this.averageCost$[symbol]) {
@@ -136,6 +138,7 @@ export class GameStateService {
   }
 
   private initSubjects () {
+    if (!this.state.account) { return; }
     Object.keys(this.state.account.shares).forEach(symbol => {
       this.updateAverageCost(symbol);
     });
