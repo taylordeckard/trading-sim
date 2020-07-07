@@ -145,10 +145,10 @@ export class GameStateService {
   }
 
   private getCostOfAllShares (symbol: string) {
-    return this.state.account.shareDetails[symbol].reduce((acc, d) => {
+    return this.state.account.shareDetails[symbol]?.reduce((acc, d) => {
       acc += d.cost * d.shares;
       return acc;
-    }, 0);
+    }, 0) || 0;
   }
 
   private sellShares (symbol: string, numShares: number) {
